@@ -22,10 +22,11 @@ PROMPT = """You will sort trash. Pick the option that best describes the image p
 5: Needles
 6: E-Waste
 7: Clothing
-8: Put in Garbage, container in Compostable
+8: Cap in Garbage, container in Compostable
 9: Cap in Garbage, container in Recyclable
 10: Utensils in Garbage, Napkin in Compostable, container in Garbage
 11: Utensils in Garbage, Napkin in Compostable, container in Compostable
+12: Not trash
 Return only the corresponding number.
 """
 
@@ -36,12 +37,11 @@ def handle_request():
         return "Hello, World!"
 
     if request.method == "POST":
-        # Check if the request contains the image and prompt data
-        if "image" not in request.files:
-            return jsonify({"error": "Image file is required"}), 400
-
         # Get the image file from the request
-        image = request.files["image"]
+        image = str(request.get_data())[2:-1]
+
+        with open("out.txt", "w") as f:
+            f.write(str(image))  # Convert the image content to string if necessary
 
         # Call the GPT API with the image
         response = gpt_with_image(image)
@@ -60,9 +60,6 @@ def gpt_with_image(image):
         "Content-Type": "application/json",
     }
 
-    # Encode the image to base64
-    base64_image = base64.b64encode(image.read()).decode("utf-8")
-
     # Construct the payload for the GPT chat API with image support
     payload = {
         "model": MODEL,
@@ -73,7 +70,7 @@ def gpt_with_image(image):
                     {"type": "text", "text": PROMPT},
                     {
                         "type": "image_url",
-                        "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+                        "image_url": {"url": f"{image}"},
                     },
                 ],
             }
@@ -85,6 +82,10 @@ def gpt_with_image(image):
     response = requests.post(
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
     )
+
+    # print(1, response.text)
+    responseJson = response.json()
+    print(responseJson["choices"][0]["message"]["content"])
 
     # Return the response as JSON
     if response.status_code == 200:
