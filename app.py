@@ -12,6 +12,7 @@ app = Flask(__name__)
 # Get your OpenAI API key from environment variable
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PROMPT = os.getenv("GPT_PROMPT")
+MODEL = os.getenv("GPT_MODEL")
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -30,14 +31,14 @@ def handle_request():
         # Read the prompt from environment variable or request data
         prompt = PROMPT or request.form.get("prompt", "What’s in this image?")
 
-        # Call the GPT-4 API with the image and prompt
-        response = gpt4_with_image(image, prompt)
+        # Call the GPT API with the image
+        response = gpt_with_image(image)
 
-        # Return the response from the GPT-4 API
+        # Return the response from the GPT API
         return jsonify(response), 200
 
 
-def gpt4_with_image(image, prompt):
+def gpt_with_image(image):
     """
     Sends a request to OpenAI's GPT-4 model with the given image and prompt.
     """
@@ -50,14 +51,14 @@ def gpt4_with_image(image, prompt):
     # Encode the image to base64
     base64_image = base64.b64encode(image.read()).decode("utf-8")
 
-    # Construct the payload for the GPT-4 chat API with image support
+    # Construct the payload for the GPT chat API with image support
     payload = {
-        "model": "gpt-4",  # GPT-4 model
+        "model": MODEL,
         "messages": [
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": prompt},
+                    {"type": "text", "text": PROMPT},
                     {
                         "type": "image",
                         "image_url": f"data:image/jpeg;base64,{base64_image}",
