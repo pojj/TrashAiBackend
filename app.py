@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
+from flask_cors import CORS
 import requests
 import os
 import base64
@@ -8,6 +9,7 @@ import base64
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
 # Get your OpenAI API key from environment variable
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
