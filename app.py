@@ -1,56 +1,85 @@
-import base64
+from flask import Flask, request, jsonify
+from dotenv import load_dotenv
 import requests
-from flask import Flask
+import os
+import base64
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
+# Get your OpenAI API key from environment variable
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+PROMPT = os.getenv("GPT_PROMPT")
 
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+
+@app.route("/", methods=["GET", "POST"])
+def handle_request():
+    if request.method == "GET":
+        return "Hello, World!"
+
+    if request.method == "POST":
+        # Check if the request contains the image and prompt data
+        if "image" not in request.files:
+            return jsonify({"error": "Image file is required"}), 400
+
+        # Get the image file from the request
+        image = request.files["image"]
+
+        # Read the prompt from environment variable or request data
+        prompt = PROMPT or request.form.get("prompt", "What’s in this image?")
+
+        # Call the GPT-4 API with the image and prompt
+        response = gpt4_with_image(image, prompt)
+
+        # Return the response from the GPT-4 API
+        return jsonify(response), 200
 
 
+def gpt4_with_image(image, prompt):
+    """
+    Sends a request to OpenAI's GPT-4 model with the given image and prompt.
+    """
+    # Prepare headers for OpenAI API request
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    # Encode the image to base64
+    base64_image = base64.b64encode(image.read()).decode("utf-8")
+
+    # Construct the payload for the GPT-4 chat API with image support
+    payload = {
+        "model": "gpt-4",  # GPT-4 model
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {
+                        "type": "image",
+                        "image_url": f"data:image/jpeg;base64,{base64_image}",
+                    },
+                ],
+            }
+        ],
+        "max_tokens": 300,  # Adjust this as needed
+    }
+
+    # Send the request to OpenAI API
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
+    )
+
+    # Return the response as JSON
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return {"error": response.json()}
+
+
+# Run the Flask app
 if __name__ == "__main__":
-    app.run(debug=True)  # debug=True enables auto-reload on code changes
-
-
-# OpenAI API Key
-api_key = "YOUR_OPENAI_API_KEY"
-
-
-# Function to encode the image
-def encode_image(image_path):
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode("utf-8")
-
-
-# Path to your image
-image_path = "path_to_your_image.jpg"
-
-# Getting the base64 string
-base64_image = encode_image(image_path)
-
-headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
-
-payload = {
-    "model": "gpt-4o-mini",
-    "messages": [
-        {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": "What’s in this image?"},
-                {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
-                },
-            ],
-        }
-    ],
-    "max_tokens": 300,
-}
-
-response = requests.post(
-    "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
-)
-
-print(response.json())
+    app.run(debug=True)
