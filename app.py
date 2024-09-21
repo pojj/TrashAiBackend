@@ -1,13 +1,16 @@
 import base64
 import requests
 from flask import Flask
+from flask_cors import CORS
 
 app = Flask(__name__)
 
+# Enable CORS for all routes and origins
+CORS(app)
 
 @app.route("/")
 def hello_world():
-    return "<p>Hello, World!</p>"
+    return "<p>Hello, World!</p>"   
 
 
 if __name__ == "__main__":
