@@ -11,8 +11,17 @@ app = Flask(__name__)
 
 # Get your OpenAI API key from environment variable
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-PROMPT = os.getenv("GPT_PROMPT")
-MODEL = os.getenv("GPT_MODEL")
+MODEL = "gpt-4o"
+PROMPT = """You will sort trash. Pick the option that best describes the image provided.
+1: Not Trash
+2: Garbage
+3: Recycling
+4: Compost
+5: Refundables
+6: Put lid in trash, rest in compost
+7: Provide special instructions (avoid this option unless necessary)
+Return only the corresponding number.
+"""
 
 
 @app.route("/", methods=["GET", "POST"])
