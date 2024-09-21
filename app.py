@@ -28,9 +28,6 @@ def handle_request():
         # Get the image file from the request
         image = request.files["image"]
 
-        # Read the prompt from environment variable or request data
-        prompt = PROMPT or request.form.get("prompt", "What’s in this image?")
-
         # Call the GPT API with the image
         response = gpt_with_image(image)
 
@@ -60,13 +57,13 @@ def gpt_with_image(image):
                 "content": [
                     {"type": "text", "text": PROMPT},
                     {
-                        "type": "image",
-                        "image_url": f"data:image/jpeg;base64,{base64_image}",
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
                     },
                 ],
             }
         ],
-        "max_tokens": 300,  # Adjust this as needed
+        "max_tokens": 300,
     }
 
     # Send the request to OpenAI API
