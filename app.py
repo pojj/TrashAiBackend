@@ -13,13 +13,17 @@ app = Flask(__name__)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL = "gpt-4o"
 PROMPT = """You will sort trash. Pick the option that best describes the image provided.
-1: Not Trash
-2: Garbage
-3: Recycling
-4: Compost
-5: Refundables
-6: Put lid in trash, rest in compost
-7: Provide special instructions (avoid this option unless necessary)
+1: Garbage
+2: Recyclable
+3: Refundable
+4: Compostable
+5: Needles
+6: E-Waste
+7: Clothing
+8: Put in Garbage, container in Compostable
+9: Cap in Garbage, container in Recyclable
+10: Utensils in Garbage, Napkin in Compostable, container in Garbage
+11: Utensils in Garbage, Napkin in Compostable, container in Compostable
 Return only the corresponding number.
 """
 
