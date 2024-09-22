@@ -14,20 +14,23 @@ CORS(app)
 # Get your OpenAI API key from environment variable
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL = "gpt-4o"
-PROMPT = """You will sort trash. Pick the option that best describes the image provided.
+PROMPT = """You are tasked with sorting waste based on an image of the item provided. Select the category that best fits the entire item or its individual components. If the item needs to be separated into different parts and disposed of in multiple categories, follow the format provided below.
 1: Garbage
 2: Recyclable
-3: Refundable
-4: Compostable
-5: Needles
-6: E-Waste
-7: Clothing
-8: Cap in Garbage, container in Compostable
-9: Cap in Garbage, container in Recyclable
-10: Utensils in Garbage, Napkin in Compostable, container in Garbage
-11: Utensils in Garbage, Napkin in Compostable, container in Compostable
-12: Not trash
-Return only the corresponding number.
+3: Compostable
+4: Needles
+5: E-Waste
+6: Clothing
+
+For example if the item is a tissue you would answer:
+3: tissue
+
+If the item must be split into multiple categories, provide the answer in this format: [number]: [item part], [number]: [item part], [number]: [item part]
+For example, if an item consists of a coffee cup with a plastic lid, you would answer:
+1: plastic lid, 2: paper cup
+
+If there is no waste in the image return exactly:
+7: Not applicable
 """
 
 
@@ -85,11 +88,11 @@ def gpt_with_image(image):
 
     # print(1, response.text)
     responseJson = response.json()
-    print(responseJson["choices"][0]["message"]["content"])
+    answer = responseJson["choices"][0]["message"]["content"]
 
     # Return the response as JSON
     if response.status_code == 200:
-        return response.json()
+        return answer
     else:
         return {"error": response.json()}
 
